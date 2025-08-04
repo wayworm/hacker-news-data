@@ -9,7 +9,7 @@ import sys
 from worker import worker_main
 
 # --- Configuration ---
-NUM_WORKERS = 10
+NUM_WORKERS = 20
 CHUNK_SIZE = 1000
 DB_URI = "postgresql://myuser:mypassword@localhost:5432/hacker_news"
 STALE_JOB_TIMEOUT_MINUTES = 15

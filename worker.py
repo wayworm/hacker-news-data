@@ -19,12 +19,14 @@ BATCH_SIZE = 1000
 def log(worker_id, message):
     """Custom log function to ensure immediate, unbuffered output from workers."""
 
-    if "--nolog" in sys.argv:
-        return None
+    if "--log" in sys.argv:
+        log_message = f"[Worker {worker_id}, PID: {os.getpid()}] {message}\n"
+        sys.stdout.write(log_message)
+        sys.stdout.flush()
+    
+    return None
 
-    log_message = f"[Worker {worker_id}, PID: {os.getpid()}] {message}\n"
-    sys.stdout.write(log_message)
-    sys.stdout.flush()
+   
 
 # --- Asynchronous API Fetching ---
 async def fetch_item_async(session, item_id):

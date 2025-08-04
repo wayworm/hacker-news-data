@@ -5,17 +5,22 @@ from psycopg2.extras import execute_values
 import time
 import sys
 
+# Import the worker function
 from worker import worker_main
 
 # --- Configuration ---
-NUM_WORKERS = 15
-CHUNK_SIZE = 200
+NUM_WORKERS = 10
+CHUNK_SIZE = 1000
 DB_URI = "postgresql://myuser:mypassword@localhost:5432/hacker_news"
 STALE_JOB_TIMEOUT_MINUTES = 15
+# How often (in seconds) the progress percentage is updated
+PROGRESS_UPDATE_INTERVAL = 4
 
 def log(message):
     """Custom log function for the dispatcher to ensure immediate output."""
-    print(message, flush=True)
+    # The extra newline at the start ensures this log appears on a new line
+    # separate from the updating progress percentage.
+    print(f"\n{message}", flush=True)
 
 def get_db_connection():
     """Establishes a new database connection."""
@@ -26,9 +31,10 @@ def setup_database(reset=False):
     conn = get_db_connection()
     with conn.cursor() as cursor:
         if reset:
-            log("⚠️ Resetting database: Dropping existing tables...")
+            print("⚠️ Resetting database: Dropping existing tables...", flush=True)
             cursor.execute("DROP TABLE IF EXISTS items, job_chunks;")
 
+        # Create tables
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS items (
             id BIGINT PRIMARY KEY, type TEXT, by TEXT, time BIGINT, text TEXT,
@@ -55,7 +61,7 @@ def fetch_max_id():
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        log(f"Error fetching max ID: {e}")
+        print(f"\nError fetching max ID: {e}", flush=True)
         return None
 
 def populate_job_chunks():
@@ -64,26 +70,23 @@ def populate_job_chunks():
     with conn.cursor() as cursor:
         cursor.execute("SELECT COUNT(*) FROM job_chunks;")
         if cursor.fetchone()[0] > 0:
-            log("Job queue is already populated. Skipping.")
-            conn.close()
             return
 
-        log("Job queue is empty. Populating now...")
+        print("\nJob queue is empty. Populating now...", flush=True)
         max_id = fetch_max_id()
         if max_id is None:
-            log("Cannot populate jobs without a max_id.")
-            conn.close()
+            print("\nCannot populate jobs without a max_id.", flush=True)
             return
 
         chunks_to_insert = []
         for i in range(1, max_id, CHUNK_SIZE):
             chunks_to_insert.append((i, min(i + CHUNK_SIZE - 1, max_id)))
 
-        log(f"Inserting {len(chunks_to_insert)} job chunks...")
+        print(f"\nInserting {len(chunks_to_insert)} job chunks...", flush=True)
         execute_values(cursor, "INSERT INTO job_chunks (start_id, end_id) VALUES %s;", chunks_to_insert)
         conn.commit()
     conn.close()
-    log("Job queue population complete.")
+    print("\nJob queue population complete.", flush=True)
 
 def reset_stale_jobs():
     """Resets jobs that were 'in_progress' for too long."""
@@ -99,9 +102,9 @@ def reset_stale_jobs():
     conn.close()
 
 if __name__ == "__main__":
-    should_reset_db = '--reset-db' in sys.argv or "--reset" in sys.argv
+    should_reset_db = '--reset-db' in sys.argv
 
-    log("--- Dispatcher Starting ---")
+    print("--- Dispatcher Starting ---", flush=True)
     setup_database(reset=should_reset_db)
     
     if not should_reset_db:
@@ -109,13 +112,39 @@ if __name__ == "__main__":
 
     populate_job_chunks()
 
-    worker_ids = list(range(1,NUM_WORKERS+1))
+    worker_ids = list(range(NUM_WORKERS))
     log(f"Launching {NUM_WORKERS} workers...")
 
-    # THE CRITICAL FIX IS HERE: maxtasksperchild=1
-    # This forces each worker process to exit and restart after completing one
-    # job, which forces its output buffers to be flushed to the console.
+    # The maxtasksperchild argument helps with memory management and logging.
     with multiprocessing.Pool(processes=NUM_WORKERS, maxtasksperchild=1) as pool:
-        pool.map(worker_main, worker_ids)
+        # Use map_async to run workers in the background without blocking the dispatcher.
+        worker_result = pool.map_async(worker_main, worker_ids)
 
+        # --- Monitoring Loop ---
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) FROM job_chunks;")
+                total_jobs = cursor.fetchone()[0]
+
+                if total_jobs == 0:
+                    log("No jobs found to monitor.")
+                else:
+                    # Loop until all workers have finished their tasks.
+                    while not worker_result.ready():
+                        cursor.execute("SELECT COUNT(*) FROM job_chunks WHERE status = 'completed';")
+                        completed_jobs = cursor.fetchone()[0]
+                        
+                        percentage = (completed_jobs / total_jobs) * 100
+                        
+                        # The '\r' character moves the cursor to the beginning of the line,
+                        # and end='' prevents a newline, effectively overwriting the previous output.
+                        print(f"\rProgress: {percentage:.2f}% ({completed_jobs}/{total_jobs} chunks complete)", end="", flush=True)
+                        
+                        time.sleep(PROGRESS_UPDATE_INTERVAL)
+        finally:
+            conn.close()
+
+    # Final print to ensure it shows 100% and a clean newline at the end.
+    print(f"\rProgress: 100.00% ({total_jobs}/{total_jobs} chunks complete)      ")
     log("--- All workers have finished. Dispatcher shutting down. ---")

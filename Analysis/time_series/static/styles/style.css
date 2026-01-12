@@ -277,3 +277,82 @@ select:focus {
 .footer i:hover {
     color: #000000;
 }
+
+@media screen and (max-width: 768px) {
+    body {
+        padding: 10px;
+        padding-bottom: 80px;
+    }
+    
+    .header h1 {
+        font-size: 1.8em;
+    }
+    
+    .header p {
+        font-size: 1em;
+    }
+    
+    .card {
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .info {
+        flex-direction: column;
+        padding: 12px;
+    }
+    
+    .info-icon {
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+    
+    .row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .chip-container {
+        gap: 6px;
+    }
+    
+    .chip {
+        font-size: 13px;
+        padding: 5px 10px;
+    }
+    
+    .footer {
+        padding: 12px 10px;
+        font-size: large;
+        justify-content: center;
+    }
+    
+    .footer i {
+        font-size: 1.4rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .header h1 {
+        font-size: 1.5em;
+    }
+    
+    .card {
+        padding: 15px;
+    }
+    
+    input[type="text"],
+    input[type="number"],
+    select {
+        font-size: 16px; 
+    }
+    
+    .btn {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    .footer {
+        font-size: medium;
+    }
+}

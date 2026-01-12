@@ -96,9 +96,9 @@ ORDER BY time_period ASC
 This returns well-ordered time-series data in configurable time bins (day, week, month, or year).
 
 
-## TimescaleDB efficiencies
+## TimescaleDB
 
-TODO: task about this a bit
+If I return to work on this project again, I'm very interested in how [TimescaleDB](https://github.com/timescale/timescaledb) (Built on top of Postgres) could help to make my data storage and retrieval system more efficient. It's [Hypertables]( https://www.tigerdata.com/docs/use-timescale/latest/hypertables) suggest I could get faster database read speeds via chunking. Additionally, I believe an[ in-memory database](https://en.wikipedia.org/wiki/In-memory_database) would be a great way to speed up my system, however I do not have access to such memory at this time. 
 
 ---
 

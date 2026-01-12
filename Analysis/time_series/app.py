@@ -32,7 +32,7 @@ def sanitize_tsquery(s: str) -> str:
     # Removing unsafe character
     s = s.replace("'", " ")
 
-    parts = [p 
+    parts = [p
              for p in s.strip().split()
              if p]
     if len(parts) == 1:

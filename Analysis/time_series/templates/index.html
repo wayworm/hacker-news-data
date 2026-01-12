@@ -22,7 +22,7 @@
                 <i class="fas fa-circle-info"></i>
             </div>
             <div class="info-content">
-                <p>Explore keyword popularity on <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>. This tool produces a graph comparing your search terms, so you can final prove to everyone you were right: pizza is more popular than burgers. I made this tool to use term frequency as a proxy for programming language trends, but I think you could seriously use it for other technological topics that are commonly spoken about on Hacker News.</p>
+                <p>Explore keyword popularity on <a href="https://news.ycombinator.com" target="_blank">Hacker News</a>. This tool produces a graph comparing your search terms, so you can finally prove to everyone you were right: pizza is more popular than burgers. I made this tool to use mentions of a language as a proxy for programming language usage trends, but I think you could seriously use it for other technological topics that are commonly spoken about on Hacker News.</p>
                 <p class="small">
                     <strong>Note:</strong> Search results are cached. High-frequency terms (like 
                     <a href="https://en.wikipedia.org/wiki/Function_word" target="_blank">function words</a>) 
@@ -37,17 +37,6 @@
                     <label for="keywords">Keywords (comma-separated)</label>
                     <input type="text" id="keywords" name="keywords" 
                            placeholder="e.g., python, rust, javascript" required>
-                    <div class="hint">Example terms:</div>
-                    <div class="chip-container">
-                        <div class="chip" onclick="addKeyword('python')">Python</div>
-                        <div class="chip" onclick="addKeyword('rust')">Rust</div>
-                        <div class="chip" onclick="addKeyword('go')">Go</div>
-                        <div class="chip" onclick="addKeyword('javascript')">JavaScript</div>
-                        <div class="chip" onclick="addKeyword('typescript')">TypeScript</div>
-                        <div class="chip" onclick="addKeyword('react')">React</div>
-                        <div class="chip" onclick="addKeyword('vue')">Vue</div>
-                        <div class="chip" onclick="addKeyword('java')">Java</div>
-                    </div>
                 </div>
                 
                 <div class="row">

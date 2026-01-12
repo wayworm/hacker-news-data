@@ -15,7 +15,6 @@ app = Flask(__name__)
 
 env_vars = config.get_db_config()
 
-# --- CONFIGURE CONNECTION ---
 DB_USER = env_vars["user"]
 DB_PASSWORD = env_vars["password"]
 DB_HOST = env_vars["host"]
@@ -30,16 +29,17 @@ engine = create_engine(
 
 def sanitize_tsquery(s: str) -> str:
     """Convert user-entered keyword into a valid tsquery string."""
-    # Remove unsafe characters
+    # Removing unsafe character
     s = s.replace("'", " ")
-    # Multi-word keywords become AND expressions
-    parts = [p for p in s.strip().split() if p]
+
+    parts = [p 
+             for p in s.strip().split()
+             if p]
     if len(parts) == 1:
         return parts[0]
     return " & ".join(parts)
 
 
-# --- KEYWORD QUERY CONFIGURATIONS ---
 KEYWORD_QUERIES = {
     "go": "golang | (go <-> lang) | (go <2> (programming | language | goroutine | channel | concurrency))",
     "rust": "rust & (programming | language | cargo | rustc | crate) & !corrosion & !metal",
@@ -166,7 +166,6 @@ def analyse():
         rolling = int(data["rolling"])
         refresh = data.get("refresh", False)
 
-        # Map keywords to queries
         keyword_queries = {}
         for kw in keywords_raw:
             kw_lower = kw.lower()
@@ -175,10 +174,8 @@ def analyse():
             else:
                 keyword_queries[kw] = sanitize_tsquery(kw_lower)
 
-        # Get baseline
         df_baseline = get_baseline(time_bin, refresh)
 
-        # Initialize plot
         plt.figure(figsize=(12, 6))
 
         results = []
@@ -189,7 +186,6 @@ def analyse():
                 results.append({"keyword": keyword, "status": "no_data"})
                 continue
 
-            # Normalize and plot
             df_norm = df_grouped.join(df_baseline, how="left")
             df_norm["normalised"] = df_norm["post_count"] / df_norm["total_items"]
             df_norm["scaled"] = df_norm["normalised"] * 100
@@ -213,7 +209,6 @@ def analyse():
 
         keywords_raw.sort()
 
-        # Finalize plot
         plt.xlabel("Time")
         plt.ylabel("Mentions per 100 comments & posts")
         plt.title(f"Posts about {', '.join(keywords_raw)}")
@@ -221,7 +216,6 @@ def analyse():
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
 
-        # Save plot
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"plot_{timestamp}_{', '.join(keywords_raw)}.png"
         filepath = image_dir / filename

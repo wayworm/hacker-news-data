@@ -8,7 +8,7 @@ Q1. **How has the popularity of programming languages changed over time?**
 Q2. **What categories of content are most popular on Hacker News?**
 Q3. **Which users have accumulated the most influence on the platform?**
 
-To answer these questions, I collected my own copy of the complete history of posts and comments, totally 45 million items, using the [Hacker News API](https://github.com/HackerNews/API) and developed a system for querying keywords and they're relative popularity, to answer Q1, then I used machine learning techniques found in [topic modeling](https://en.wikipedia.org/wiki/Topic_model) for Q2, and finallly I simply queried user metrics to approach Q3.
+To answer these questions, I collected my own copy of the complete history of posts and comments, totally 45 million items, using the [Hacker News API](https://github.com/HackerNews/API) and created a system for querying keywords and their relative popularity, to answer Q1, then I applied machine learning techniques found in [topic modeling](https://en.wikipedia.org/wiki/Topic_model) for Q2, and finally I simply queried user metrics to approach Q3.
 
 ---
 
@@ -25,7 +25,7 @@ The collection system used parallel processing to efficiently download millions 
 - **Job management system** to coordinate workers and prevent duplicate downloads
 - **Asynchronous operations** to avoid blocking on API calls
 
-The `dispatcher.py` script managed worker instances and assigned jobs (ranges of item IDs to download). A `jobs` table in PostgreSQL tracked which portions of the data had been downloaded, allowing the system to resume after interruptions without data loss.
+The `dispatcher.py` script managed worker instances and assigned jobs (ranges of item IDs to download). A `jobs` table in PostgreSQL tracked which portions of the data had been downloaded, allowing the system to resume after interruptions where it had left off.
 
 ### Example API Response
 
@@ -47,10 +47,11 @@ The `dispatcher.py` script managed worker instances and assigned jobs (ranges of
 
 The data collection process evolved through several iterations:
 
-1. **Initial prototype**: Simple single-threaded program using SQLite. I was familiar with SQLite, and so it was my first choice.
+1. **Initial prototype**: Simple single-threaded program using an SQLite database. I was familiar with SQLite, and so it was my first choice.
 
 2. **Multiprocessing implementation**: Reduced collection time from ~100 days to ~10 days. This was a simple speed-up, as each data item needed to be fetched independently, it was a perfect use-case for parallelism.
-3. **Migration to PostgreSQL**: Enabled JSONB storage and better performance (Was this really why?). Additionally, I wanted to explore using PostgreSQL and it's functionality. I made use of the [Dbeaver](https://dbeaver.io/) database management tool throughout this project.
+
+3. **Migration to PostgreSQL**: This allowed for [JSONB](https://www.postgresql.org/docs/current/datatype-json.html) storage which I wanted for the kids column. Additionally, I wanted to explore using PostgreSQL and it's functionality. I made use of the [Dbeaver](https://dbeaver.io/) database management tool throughout this project.
 
 4. **Job-based coordination**: Added the jobs table system for fault tolerance and resumability. By having this system, I meant any "job" could be picked up by a worker instance as long as it was not currently underway, so no portion of the work was tied to any given running instance, so it was easy to stop the system and increase the number of workers if needed, with minimal loss. Writes to the database were also now being done in large chunks, as I'd read this would increase efficiency [add sources]
 
@@ -80,7 +81,7 @@ CREATE INDEX idx_items_time ON items (time);
 
 ### Query Pattern for Time-Series Analysis
 
-Temporal keyword frequency queries followed this pattern:
+Keyword frequency queries followed this pattern:
 
 ```sql
 SELECT
@@ -94,6 +95,11 @@ ORDER BY time_period ASC
 
 This returns well-ordered time-series data in configurable time bins (day, week, month, or year).
 
+
+## TimescaleDB efficiencies
+
+TODO: task about this a bit
+
 ---
 
 ## Analysis 1: Programming Language Popularity Over Time
@@ -102,8 +108,8 @@ This returns well-ordered time-series data in configurable time bins (day, week,
 
 I built a Flask web application that queries the PostgreSQL database for keyword frequencies over time. The system:
 
-- Uses SQLAlchemy to execute time-series queries
-- Normalizes frequencies (posts per 100 total items) to account for Hacker News's growth
+- Uses SQLAlchemy to execute time-series queries. This allowed for database-agnosticism.
+- Normalizes frequencies (mentions per 100 total posts + comments) to account for Hacker News's growth
 - Applies rolling averages to smooth short-term fluctuations
 - Generates matplotlib visualizations comparing multiple keywords
 

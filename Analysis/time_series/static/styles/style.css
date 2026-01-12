@@ -399,6 +399,7 @@ select:focus {
     .footer {
         padding: 8px;
         font-size: small;
+        background-color: rgba(0,0,0,0.6);
     }
     
     .footer i {

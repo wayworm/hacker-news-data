@@ -178,9 +178,6 @@ def analyse():
         # Get baseline
         df_baseline = get_baseline(time_bin, refresh)
 
-        # Initialize plot
-        plt.figure(figsize=(12, 6))
-
         results = []
         for keyword, tsquery in keyword_queries.items():
             df_grouped = query_keyword(keyword, tsquery, time_bin, refresh)
@@ -189,7 +186,7 @@ def analyse():
                 results.append({"keyword": keyword, "status": "no_data"})
                 continue
 
-            # Normalize and plot
+            # Normalize
             df_norm = df_grouped.join(df_baseline, how="left")
             df_norm["normalised"] = df_norm["post_count"] / df_norm["total_items"]
             df_norm["scaled"] = df_norm["normalised"] * 100
@@ -211,16 +208,18 @@ def analyse():
                  "points": len(df_grouped)}
             )
 
-        # Finalize plot
+        # plot
+        plt.figure(figsize=(12, 6))
         plt.xlabel("Time")
-        plt.ylabel("Posts per 100 items")
-        plt.title(f"Posts over time for: {', '.join(keywords_raw)}")
+        plt.ylabel("Mentions per 100 comments & posts")
+        plt.title(f"Posts about {', '.join(keywords_raw)}")
         plt.legend()
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
 
         # Save plot
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        keywords_raw.sort()
         filename = f"plot_{timestamp}_{', '.join(keywords_raw)}.png"
         filepath = image_dir / filename
         plt.savefig(filepath, dpi=150)

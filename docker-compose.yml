@@ -10,6 +10,8 @@ services:
       - hn-network 
   db:
     image: postgres:14-alpine
+    volumes:
+      - /mnt/database/postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

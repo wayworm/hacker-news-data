@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hacker News Analysis{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hacker News Analysis</h1>
+            <nav class="nav-links">
+                <div class="nav-item">
+                    <a href="{{ url_for('index') }}" class="nav-link {{ 'active' if request.path == '/' }}">Keyword Trends</a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('users') }}" class="nav-link {{ 'active' if request.path == '/users' }}">Top Users</a>
+                </div>
+            </nav>
+        </div>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer">
+        <a href="https://github.com/teddy-mcdermott" target="_blank">
+            <i class="fab fa-github"></i> GitHub
+        </a>
+        <p> | </p>
+        <a href="https://www.teddymcdermott.co.uk">Teddy McDermott</a>
+        <p> | </p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

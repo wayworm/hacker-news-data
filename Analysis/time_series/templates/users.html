@@ -1,23 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top Users - Hacker News Analysis</title>
-    <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="static/styles/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Hacker News Analysis</h1>
-            <nav class="nav-links">
-                <div class="nav-item"><a href="/" class="nav-link">Keyword Trends</a></div>
-                <div class="nav-item"><a href="/users" class="nav-link active">Top Users</a></div>
-            </nav>
-        </div>
-        
+{% extends "layout.html" %}
+
+{% block title %}Top Users - Hacker News Analysis{% endblock %}
+
+{% block content %}
         <div class="info">
             <div class="info-icon">
                 <i class="fas fa-users"></i>
@@ -71,16 +56,9 @@
             </div>
         </div>
     </div>
-    
-    <footer class="footer">
-        <a href="https://github.com/teddy-mcdermott" target="_blank">
-            <i class="fab fa-github"></i> GitHub
-        </a>
-        <p> | </p>
-        <a href="https://www.teddymcdermott.co.uk">Teddy McDermott</a>
-        <p> | </p>
-    </footer>
-    
+{% endblock %}
+
+
+{% block scripts %}
     <script src="static/js/users.js"></script>
-</body>
-</html>
+{% endblock %}

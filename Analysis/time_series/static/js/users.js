@@ -32,7 +32,7 @@ document.getElementById('topUsersForm').addEventListener('submit', async (e) => 
             ).join('');
             
             tableContainer.innerHTML = `
-                <h3 style="margin-top: 2rem;">Top ${Math.min(20, data.users.length)} Users by Cumulative Score</h3>
+                <h3 style="margin-top: 2rem;">Top ${Math.min(limit, data.users.length)} Users by Cumulative Score</h3>
                 <div style="overflow-x: auto;">
                     <table class="users-table">
                         <thead>
@@ -49,7 +49,7 @@ document.getElementById('topUsersForm').addEventListener('submit', async (e) => 
                             ${data.users.slice(0, 20).map((user, idx) => `
                                 <tr>
                                     <td>${idx + 1}</td>
-                                    <td><a href="https://news.ycombinator.com/user?id=${user.username}" target="_blank">${user.username}</a></td>
+                                    <td>${user.by.toLocaleString()} </td>
                                     <td>${user.total_posts.toLocaleString()}</td>
                                     <td>${user.cumulative_score.toLocaleString()}</td>
                                     <td>${user.avg_score}</td>

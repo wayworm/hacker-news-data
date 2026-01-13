@@ -49,7 +49,7 @@ document.getElementById('topUsersForm').addEventListener('submit', async (e) => 
                             ${data.users.slice(0, 20).map((user, idx) => `
                                 <tr>
                                     <td>${idx + 1}</td>
-                                    <td>${user.by.toLocaleString()} </td>
+                                    <td>${user.username.toLocaleString()} </td>
                                     <td>${user.total_posts.toLocaleString()}</td>
                                     <td>${user.cumulative_score.toLocaleString()}</td>
                                     <td>${user.avg_score}</td>

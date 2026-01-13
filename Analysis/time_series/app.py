@@ -198,7 +198,7 @@ def users():
             df.to_csv(cache_filename, index=False)
 
         images = []
-        leaderboard_count = min(20, len(df))
+        leaderboard_count = min(limit, 200)
         df_plot = df.head(leaderboard_count).copy()
 
         plt.figure(figsize=(12, 8))

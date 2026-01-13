@@ -39,7 +39,6 @@ document.getElementById('analysisForm').addEventListener('submit', async (e) => 
         const data = await response.json();
         
         if (data.success) {
-            // Show results
             let statusHTML = '<h3>Analysis Complete</h3>';
             data.results.forEach(r => {
                 if (r.status === 'success') {

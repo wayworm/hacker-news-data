@@ -1,7 +1,14 @@
 FROM python:3.11-slim
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
 COPY ./helper ./helper
 COPY ./Analysis/time_series ./Analysis/time_series
 COPY ./Analysis/topics ./Analysis/topics

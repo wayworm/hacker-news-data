@@ -35,7 +35,7 @@ services:
       - hn-network
     volumes:
       - cache_data:/app/cache
-      - image_data:/app/static/images
+      - image_data:/app/Analysis/time_series/static/images  # ← Fixed path
 
   scraper:
     build:

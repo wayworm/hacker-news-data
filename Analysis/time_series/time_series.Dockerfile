@@ -7,7 +7,8 @@ COPY ./Analysis/time_series ./Analysis/time_series
 COPY ./Analysis/topics ./Analysis/topics
 COPY ./Analysis/users ./Analysis/users
 
-RUN mkdir -p /app/cache /app/static/images
+RUN mkdir -p /app/cache 
+RUN mkdir -p /app/Analysis/time_series/static/images
 
 ENV PYTHONPATH=/app
 ENV PROJECT_ROOT=/app

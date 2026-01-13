@@ -4,9 +4,10 @@ import os
 PROJECT_ROOT = Path(os.getenv('PROJECT_ROOT', '/app'))
 
 CACHE_DIR = PROJECT_ROOT / 'cache'
-IMAGE_DIR = PROJECT_ROOT / 'static' / 'images'
-
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+FLASK_STATIC_DIR = PROJECT_ROOT / 'Analysis' / 'time_series' / 'static' / 'images'
+IMAGE_DIR = FLASK_STATIC_DIR
 IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
 

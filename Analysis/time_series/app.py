@@ -147,7 +147,7 @@ def key_words():
     )
 
 
-@app.route("topics")
+@app.route("/topics")
 def topics():
     return render_template(
         "topics.html"

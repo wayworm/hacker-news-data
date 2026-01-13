@@ -32,9 +32,7 @@ def sanitize_tsquery(s: str) -> str:
     # Removing unsafe character
     s = s.replace("'", " ")
 
-    parts = [p
-             for p in s.strip().split()
-             if p]
+    parts = [p for p in s.strip().split() if p]
     if len(parts) == 1:
         return parts[0]
     return " & ".join(parts)
@@ -156,12 +154,123 @@ def index():
     )
 
 
+@app.route("/users", methods=["GET", "POST"])
+def users():
+    if request.method == "GET":
+        return render_template("users.html")
+
+    try:
+        data = request.json
+        item_type = data.get("itemType", "all")
+        limit = data.get("limit", 100)
+        refresh = data.get("refresh", False)
+
+        # Query for top users
+        if item_type == "all":
+            type_filter = "type IN ('story', 'comment')"
+        elif item_type in ["story", "comment"]:
+            type_filter = f"type = '{item_type}'"
+        else:
+            return jsonify({"success": False, "error": "Invalid item type"}), 400
+
+        query = text(
+            f"""
+            SELECT 
+                by AS username,
+                COUNT(*) AS total_posts,
+                SUM(score) AS cumulative_score,
+                ROUND(AVG(score)::numeric, 2) AS avg_score,
+                MAX(score) AS top_post_score,
+                MIN(to_timestamp(time)) AS first_post_date,
+                MAX(to_timestamp(time)) AS last_post_date
+            FROM items
+            WHERE by IS NOT NULL
+                AND by != ''
+                AND {type_filter}
+                AND score IS NOT NULL
+            GROUP BY by
+            HAVING SUM(score) > 0
+            ORDER BY cumulative_score DESC
+            LIMIT :limit
+        """
+        )
+
+        with engine.connect() as conn:
+            df = pd.read_sql(query, conn, params={"limit": limit})
+
+        # Generate visualizations
+        images = []
+
+        # Leaderboard chart
+        df_plot = df.head(20).copy()
+        plt.figure(figsize=(12, 8))
+        colors = plt.cm.viridis(range(len(df_plot)))
+        plt.barh(df_plot["username"], df_plot["cumulative_score"], color=colors)
+        plt.xlabel("Cumulative Score")
+        plt.ylabel("Username")
+        plt.title(f"Top 20 Users by Cumulative Score")
+        plt.gca().invert_yaxis()
+        plt.grid(axis="x", alpha=0.3)
+        plt.tight_layout()
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename1 = f"leaderboard_{timestamp}.png"
+        filepath1 = image_dir / filename1
+        plt.savefig(filepath1, dpi=150, bbox_inches="tight")
+        plt.close()
+        images.append(f"/static/images/{filename1}")
+
+        # Quality vs Quantity scatter plot
+        df_plot2 = df.head(min(100, limit)).copy()
+        plt.figure(figsize=(12, 8))
+        scatter = plt.scatter(
+            df_plot2["total_posts"],
+            df_plot2["cumulative_score"],
+            c=df_plot2["avg_score"],
+            cmap="plasma",
+            s=100,
+            alpha=0.6,
+            edgecolors="black",
+            linewidth=0.5,
+        )
+
+        # Label top 10 users
+        for idx, row in df_plot2.head(10).iterrows():
+            plt.annotate(
+                row["username"],
+                (row["total_posts"], row["cumulative_score"]),
+                xytext=(5, 5),
+                textcoords="offset points",
+                fontsize=8,
+                alpha=0.7,
+            )
+
+        plt.colorbar(scatter, label="Average Score")
+        plt.xlabel("Total Posts")
+        plt.ylabel("Cumulative Score")
+        plt.title(f"Quality vs Quantity: Top {min(100, limit)} Users")
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+
+        filename2 = f"quality_vs_quantity_{timestamp}.png"
+        filepath2 = image_dir / filename2
+        plt.savefig(filepath2, dpi=150, bbox_inches="tight")
+        plt.close()
+        images.append(f"/static/images/{filename2}")
+
+        users_list = df.to_dict("records")
+
+        return jsonify({"success": True, "images": images, "users": users_list})
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500("users.html")
+
+
 @app.route("/analyse", methods=["POST"])
 def analyse():
     try:
         data = request.json
-        keywords_raw = [k.strip()
-                        for k in data["keywords"].split(",") if k.strip()]
+        keywords_raw = [k.strip() for k in data["keywords"].split(",") if k.strip()]
         time_bin = data["timeBin"]
         rolling = int(data["rolling"])
         refresh = data.get("refresh", False)
@@ -203,8 +312,7 @@ def analyse():
                 )
 
             results.append(
-                {"keyword": keyword, "status": "success",
-                 "points": len(df_grouped)}
+                {"keyword": keyword, "status": "success", "points": len(df_grouped)}
             )
 
         keywords_raw.sort()
@@ -223,8 +331,7 @@ def analyse():
         plt.close()
 
         return jsonify(
-            {"success": True,
-             "image": f"/static/images/{filename}", "results": results}
+            {"success": True, "image": f"/static/images/{filename}", "results": results}
         )
 
     except Exception as e:

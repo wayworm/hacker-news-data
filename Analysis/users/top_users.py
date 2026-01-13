@@ -28,8 +28,6 @@ import helper.config as config
 # CREATE INDEX idx_items_by_type_score ON items (by, type, score) WHERE score IS NOT NULL;
 
 
-# --- CONFIGURE CONNECTION ---
-
 env_vars = config.get_db_config()
 
 DB_USER = env_vars["user"]
@@ -56,7 +54,7 @@ image_dir = BASE_DIR / "images"
 image_dir.mkdir(parents=True, exist_ok=True)
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename='top_users.log', level=logging.INFO)
+logging.basicConfig(filename='users.log', level=logging.INFO)
 
 
 def log(message):
@@ -91,7 +89,7 @@ def get_top_users(item_type="all", limit=100, refresh=False):
 
     query = text(
         f"""
-        SELECT 
+        SELECT
             by AS username,
             COUNT(*) AS total_posts,
             SUM(score) AS cumulative_score,
@@ -115,11 +113,11 @@ def get_top_users(item_type="all", limit=100, refresh=False):
     with engine.connect() as conn:
         df = pd.read_sql(query, conn, params={"limit": limit})
 
-    # Calculate posts per day
+
     df["posts_per_day"] = df["total_posts"] / df["days_active"].replace(0, 1)
     df["posts_per_day"] = df["posts_per_day"].round(2)
 
-    # Save to cache
+
     df.to_csv(cache_filename, index=False)
     log(f"Cached results to {cache_filename}")
 
@@ -169,7 +167,7 @@ def user_activity(username, time_bin="month", refresh=False):
     return df
 
 
-def plot_top_users_leaderboard(df, top_n=20, metric="cumulative_score"):
+def plot_leaderboard(df, top_n=20, metric="cumulative_score"):
     """Create a horizontal bar chart of top users"""
     df_plot = df.head(top_n).copy()
 
@@ -295,7 +293,7 @@ def plot_user_timeline(username, time_bin="month"):
 
 def main():
     parser = argparse.ArgumentParser(description="Analyze top Hacker News users")
-    
+
     parser.add_argument(
         "--type",
         choices=["all", "story", "comment"],
@@ -349,10 +347,9 @@ def main():
     )
     log("\n")
 
-    # Generate visualizations
     log("\nGenerating visualizations...")
-    plot_top_users_leaderboard(df, top_n=20, metric="cumulative_score")
-    plot_top_users_leaderboard(df, top_n=20, metric="total_posts")
+    plot_leaderboard(df, top_n=20, metric="cumulative_score")
+    plot_leaderboard(df, top_n=20, metric="total_posts")
     plot_quality_vs_quantity(df, top_n=100)
     log("\nAnalysis complete! Check the 'images' directory for plots.")
     log(f"Cached data available in: {cache_dir}")

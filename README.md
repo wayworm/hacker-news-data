@@ -42,7 +42,7 @@ python bertopic_analysis.py --days 365 --max-items 5000
 
 # User influence ranking
 cd ../users
-python top_users.py --limit 100
+python users.py --limit 100
 ```
 
 ---

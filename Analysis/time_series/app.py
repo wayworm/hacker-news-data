@@ -147,6 +147,13 @@ def key_words():
     )
 
 
+@app.route("topics")
+def topics():
+    return render_template(
+        "topics.html"
+    )
+
+
 @app.route("/users", methods=["GET", "POST"])
 def users():
     if request.method == "GET":

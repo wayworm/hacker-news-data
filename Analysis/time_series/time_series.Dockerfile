@@ -10,7 +10,7 @@ COPY ./Analysis/users ./Analysis/users
 RUN mkdir -p /app/cache 
 RUN mkdir -p /app/Analysis/time_series/static/images
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app 
 ENV PROJECT_ROOT=/app
 
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--chdir", "Analysis/time_series", "--timeout", "600", "app:app"]

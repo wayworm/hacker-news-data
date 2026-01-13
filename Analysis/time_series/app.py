@@ -1,4 +1,6 @@
 from datetime import datetime
+import threading
+from types import SimpleNamespace
 
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
@@ -8,6 +10,7 @@ from sqlalchemy import create_engine, text
 
 import helper.config as config
 from helper.paths import get_cache_path, get_image_path
+from topics.topics import get_model_identity, load_or_train_model, analyze_topics, visualize_topics
 
 matplotlib.use("Agg")
 
@@ -27,7 +30,7 @@ engine = create_engine(
 )
 
 
-def sanitize_tsquery(s: str) -> str:
+def sanitise_tsquery(s: str) -> str:
     """Convert user-entered keyword into a valid tsquery string."""
     # Removing unsafe character
     s = s.replace("'", " ")
@@ -170,12 +173,13 @@ def users():
         if not refresh and cache_filename.exists():
             df = pd.read_csv(cache_filename)
         else:
-            if item_type == "all":
-                type_filter = "type IN ('story', 'comment')"
-            elif item_type in ["story", "comment"]:
-                type_filter = f"type = '{item_type}'"
-            else:
-                return jsonify({"success": False, "error": "Invalid item type"}), 400
+            filters = {
+                "all": "type IN ('story', 'comment')",
+                "story": "type = 'story'",
+                "comment": "type = 'comment'"
+            }
+
+            type_filter = filters.get(item_type, filters["all"])
 
             query = text(
                 f"""
@@ -285,7 +289,7 @@ def analyse():
             if kw_lower in KEYWORD_QUERIES:
                 keyword_queries[kw] = KEYWORD_QUERIES[kw_lower]
             else:
-                keyword_queries[kw] = sanitize_tsquery(kw_lower)
+                keyword_queries[kw] = sanitise_tsquery(kw_lower)
 
         df_baseline = get_baseline(time_bin, refresh)
 
@@ -340,6 +344,62 @@ def analyse():
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+analysis_status = {}
+
+
+@app.route("/analyse_topics", methods=["POST"])
+def start_topic_analysis():
+    data = request.json
+    task_id = f"task_{datetime.now().strftime('%H%M%S')}"
+
+    analysis_status[task_id] = {"status": "processing", "result": None}
+
+    thread = threading.Thread(target=run_heavy_nlp, args=(data, task_id))
+    thread.start()
+
+    return jsonify({"success": True, "task_id": task_id})
+
+
+def run_heavy_nlp(params, task_id):
+    try:
+        args = SimpleNamespace(
+            days=params.get('days', 365),
+            min_score=params.get('min_score', 10),
+            max_items=params.get('max_items', 50000),
+            type=params.get('type', 'story'),
+            min_topic_size=params.get('min_topic_size', 10),
+            num_topics=params.get('num_topics', None),
+            refresh=params.get('refresh', False),
+            load_model=params.get('load_model', None)
+        )
+
+        model_name = get_model_identity(args)
+
+        topic_model, topics, df = load_or_train_model(args, model_name)
+
+        if topic_model is not None:
+            analyze_topics(topic_model, df, topics)
+            visualize_topics(topic_model, df, topics, model_name)
+
+            analysis_status[task_id] = {
+                "status": "completed",
+                "images": [
+                    f"/static/images/topic_distribution_{model_name}.png",
+                    f"/static/images/topic_clusters_2d_{model_name}.png"
+                ]
+            }
+        else:
+            analysis_status[task_id] = {"status": "error", "message": "Model failed to initialise"}
+
+    except Exception as e:
+        analysis_status[task_id] = {"status": "error", "message": str(e)}
+
+
+@app.route("/check_status/<task_id>")
+def check_status(task_id):
+    return jsonify(analysis_status.get(task_id, {"status": "not_found"}))
 
 
 if __name__ == "__main__":

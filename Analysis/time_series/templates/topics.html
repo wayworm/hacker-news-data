@@ -1,17 +1,74 @@
-{% extends "layout.html" %}<!DOCTYPE html>
+{% extends "layout.html" %}
 
 {% block title %}Topics - Hacker News Analysis{% endblock %}
 
 {% block content %}
-
 <div class="card">
+    <div class="info">
+        <div class="info-icon"><i class="fas fa-brain"></i></div>
+        <div class="info-content">
+            <p><strong>Topic Modeling with BERTopic</strong></p>
+            <p class="small">This tool fetches recent posts and uses Transformers to cluster them into semantic themes. Note: Training a new model can take 1-3 minutes depending on volume.</p>
+        </div>
+    </div>
 
-    <p> Hello World </p>
-    
+    <div class="row">
+        <div class="form-container">
+            <div class="form-group">
+                <label for="days">Days Back</label>
+                <input type="number" id="days" value="30" min="1" max="365">
+                <p class="hint">How far back to search the database.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="min_score">Minimum Score</label>
+                <input type="number" id="min_score" value="10" min="0">
+                <p class="hint">Only analyze high-quality/popular posts.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="max_items">Max Items</label>
+                <input type="number" id="max_items" value="5000" step="500">
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="refresh">
+                <label for="refresh">Force Refresh Database</label>
+            </div>
+
+            <button id="run-btn" class="btn" onclick="startAnalysis()">
+                <i class="fas fa-microchip"></i> Run Topic Analysis
+            </button>
+        </div>
+
+        <div id="status-section" style="display: none;">
+            <div class="status">
+                <div class="loading" id="main-spinner" style="display: block;">
+                    <div class="spinner"></div>
+                    <p id="status-text">Ready to initialize...</p>
+                </div>
+                <div id="status-items">
+                    </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<div id="result-container" class="result">
+    <div class="card">
+        <h3>Topic Cluster Map (UMAP)</h3>
+        <p class="hint">A 2D projection of how posts relate to each other semantically.</p>
+        <img id="cluster-img" src="" alt="Topic Clusters">
+    </div>
+
+    <div class="card">
+        <h3>Topic Distribution</h3>
+        <p class="hint">The most frequent themes found in the dataset.</p>
+        <img id="dist-img" src="" alt="Topic Distribution">
+    </div>
+</div>
 {% endblock %}
 
-
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/topics.js') }}"></script>
 {% endblock %}

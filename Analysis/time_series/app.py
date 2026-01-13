@@ -141,9 +141,9 @@ def query_keyword(keyword, tsquery, time_bin, refresh=False):
 
 
 @app.route("/")
-def index():
+def key_words():
     return render_template(
-        "index.html", predefined_keywords=list(KEYWORD_QUERIES.keys())
+        "key_words.html", predefined_keywords=list(KEYWORD_QUERIES.keys())
     )
 
 

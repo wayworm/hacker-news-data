@@ -46,7 +46,7 @@ document.getElementById('topUsersForm').addEventListener('submit', async (e) => 
                             </tr>
                         </thead>
                         <tbody>
-                            ${data.users.slice(0, limit).map((user, idx) => `
+                            ${data.users.map((user, idx) => `
                                 <tr>
                                     <td>${idx + 1}</td>
                                     <td>${user.username.toLocaleString()} </td>

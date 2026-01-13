@@ -8,7 +8,7 @@ Q1. **How has the popularity of programming languages changed over time?**
 Q2. **What categories of content are most popular on Hacker News?**
 Q3. **Which users have accumulated the most influence on the platform?**
 
-To answer these questions, I collected my own copy of the complete history of posts and comments, totally 45 million items, using the [Hacker News API](https://github.com/HackerNews/API) and created a system for querying keywords and their relative popularity, to answer Q1, then I applied machine learning techniques found in [topic modeling](https://en.wikipedia.org/wiki/Topic_model) for Q2, and finally I simply queried user metrics to approach Q3.
+To answer these questions, I collected my own copy of the complete history of posts and comments, totally 45 million items, using the [Hacker News API](https://github.com/HackerNews/API) and created a system for querying keywords and their relative popularity, to answer Q1, then I applied machine learning techniques found in [Topic Modeling](https://en.wikipedia.org/wiki/Topic_model) for Q2, and finally I simply queried user metrics to approach Q3.
 
 ---
 
@@ -119,7 +119,7 @@ The web interface allows users to enter keywords, select time bins, and configur
 
 [FINDINGS TO BE ADDED]
 
-Example visualization:
+Example visualisation:
 
 ![A graph comparing the relative number of posts containing the terms "Python", "Java", "Javascript", "Rust", "C++", "AI", "ML" showing the term C++ to be more popular than the others, until a spiking of usage in the term AI from last 2022, where it begins to dominate.](images/posts_python_java_javascript_rust_C++_AI_ML_normalised_rolling_average-10.png)
 
@@ -129,6 +129,7 @@ Example visualization:
 - [Language popularity shifts]
 - [AI/ML growth patterns]
 - [Notable inflection points]
+- [Identifiable events]
 
 ---
 
@@ -170,7 +171,7 @@ The BERTopic pipeline consists of four stages:
 
 [FINDINGS TO BE ADDED]
 
-**Data analyzed:**
+**Data analysed:**
 - [Number of documents]
 - [Time period covered]
 - [Number of topics discovered]
@@ -196,7 +197,7 @@ Topic 3: apple, backdoor, uk, macos, encryption
 [INSERT ADDITIONAL EXAMPLE TOPICS]
 ```
 
-**Visualizations:**
+**Visualisations:**
 
 [INSERT CLUSTER DIAGRAM]
 [INSERT TOPIC DISTRIBUTION CHART]
@@ -208,7 +209,7 @@ Topic 3: apple, backdoor, uk, macos, encryption
 
 ### Methodology
 
-To identify the most influential Hacker News users, I analyzed cumulative karma scores and posting patterns. The analysis tracked:
+To identify the most influential Hacker News users, I analysed cumulative point scores. The analysis tracked:
 
 - **Total posts** (stories + comments)
 - **Cumulative score** (total karma earned)
@@ -220,7 +221,6 @@ I created separate analyses for:
 - Overall rankings (all content)
 - Story posters vs. commenters
 - Individual user timelines
-
 ### Results
 
 [FINDINGS TO BE ADDED]

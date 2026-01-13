@@ -138,6 +138,16 @@ def setup_database(reset=False):
         cursor.execute("""CREATE INDEX IF NOT EXISTS idx_items_search_vector
                        ON items USING GIN(text_search_vector);""")
 
+        log("Creating index for user searching")
+        cursor.execute("""CREATE INDEX idx_items_user_score_type
+                        ON items (by, type, score)
+                        WHERE score IS NOT NULL AND by IS NOT NULL;
+                        """)
+
+        cursor.execute("CREATE INDEX idx_items_by_time ON items (by, time);")
+
+        cursor.execute("CREATE INDEX idx_items_type ON items (type);")
+
     conn.commit()
     conn.close()
     log("Database setup complete.")

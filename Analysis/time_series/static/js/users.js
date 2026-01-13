@@ -32,7 +32,7 @@ document.getElementById('topUsersForm').addEventListener('submit', async (e) => 
             ).join('');
             
             tableContainer.innerHTML = `
-                <h3 style="margin-top: 2rem;">Top ${Math.min(limit, data.users.length)} Users by Cumulative Score</h3>
+                <h3 style="margin-top: 2rem;">Top ${data.users.length} Users by Cumulative Score</h3>
                 <div style="overflow-x: auto;">
                     <table class="users-table">
                         <thead>

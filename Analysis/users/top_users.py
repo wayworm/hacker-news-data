@@ -10,24 +10,6 @@ from helper.paths import get_cache_path, get_image_path
 
 # Q3. **Which users have accumulated the most influence on the platform?**
 
-# This is SLOWWW need to make these indexes
-
-# -- Index on 'by' column (most important for this script)
-# CREATE INDEX idx_items_by ON items (by);
-
-# -- Index on 'type' column for filtering by story/comment
-# CREATE INDEX idx_items_type ON items (type);
-
-# -- Composite index for combined filtering (even better)
-# CREATE INDEX idx_items_by_type ON items (by, type);
-
-# -- Index on score for filtering out nulls
-# CREATE INDEX idx_items_score ON items (score) WHERE score IS NOT NULL;
-
-# -- Composite index optimized for the top users query
-# CREATE INDEX idx_items_by_type_score ON items (by, type, score) WHERE score IS NOT NULL;
-
-
 env_vars = config.get_db_config()
 
 DB_USER = env_vars["user"]
@@ -101,10 +83,8 @@ def get_top_users(item_type="all", limit=100, refresh=False):
     with engine.connect() as conn:
         df = pd.read_sql(query, conn, params={"limit": limit})
 
-
     df["posts_per_day"] = df["total_posts"] / df["days_active"].replace(0, 1)
     df["posts_per_day"] = df["posts_per_day"].round(2)
-
 
     df.to_csv(cache_filename, index=False)
     log(f"Cached results to {cache_filename}")
@@ -340,7 +320,7 @@ def main():
     plot_leaderboard(df, top_n=20, metric="total_posts")
     plot_quality_vs_quantity(df, top_n=100)
     log("\nAnalysis complete! Check the 'images' directory for plots.")
-    log(f"Cached data available in: {cache_dir}")
+    log(f"Cached data available in: {get_cache_path('')}")
 
 
 if __name__ == "__main__":

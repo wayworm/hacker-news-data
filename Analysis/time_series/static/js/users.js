@@ -4,7 +4,7 @@ document.getElementById('topUsersForm').addEventListener('submit', async (e) => 
     const submitBtn = document.getElementById('submitBtn');
     const loading = document.getElementById('loading');
     const result = document.getElementById('result');
-    const visualizations = document.getElementById('visualizations');
+    const visualisations = document.getElementById('visualisations');
     const tableContainer = document.getElementById('tableContainer');
     
     submitBtn.disabled = true;
@@ -27,7 +27,7 @@ document.getElementById('topUsersForm').addEventListener('submit', async (e) => 
         const data = await response.json();
         
         if (data.success) {
-            visualizations.innerHTML = data.images.map(img => 
+            visualisations.innerHTML = data.images.map(img => 
                 `<img src="${img}" alt="Visualization" style="max-width: 100%; margin: 1rem 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">`
             ).join('');
             

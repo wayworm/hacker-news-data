@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, text
 
 import helper.config as config
 from helper.paths import get_cache_path, get_image_path
-from topics.topics import get_model_identity, load_or_train_model, analyze_topics, visualize_topics
+from Analysis.topics.topics import get_model_identity, load_or_train_model, analyse_topics, visualise_topics
 
 matplotlib.use("Agg")
 
@@ -380,8 +380,8 @@ def run_heavy_nlp(params, task_id):
         topic_model, topics, df = load_or_train_model(args, model_name)
 
         if topic_model is not None:
-            analyze_topics(topic_model, df, topics)
-            visualize_topics(topic_model, df, topics, model_name)
+            analyse_topics(topic_model, df, topics)
+            visualise_topics(topic_model, df, topics, model_name)
 
             analysis_status[task_id] = {
                 "status": "completed",

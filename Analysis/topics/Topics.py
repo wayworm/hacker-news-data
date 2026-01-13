@@ -80,7 +80,7 @@ def fetch_recent_posts(
         f"Parameters: days_back={days_back}, min_score={min_score}, max_items={max_items}"
     )
 
-    cutoff_date = datetime.now() - timedelta(days=days_back)
+    cutoff_date = datetime.now() - timedelta(days=int(days_back))
     cutoff_timestamp = int(cutoff_date.timestamp())
 
     # Build type filter
@@ -229,7 +229,7 @@ def load_model(model_name):
     return topic_model
 
 
-def analyze_topics(topic_model, df, topics):
+def analyse_topics(topic_model, df, topics):
     """Analyze and display topic information"""
 
     # Add topics to dataframe
@@ -300,10 +300,10 @@ def analyze_topics(topic_model, df, topics):
     return topic_info, topic_stats
 
 
-def visualize_topics(topic_model, df, topics, model_name):
-    """Create visualizations of topics"""
+def visualise_topics(topic_model, df, topics, model_name):
+    """Create visualisations of topics"""
 
-    log("\nGenerating visualizations...")
+    log("\nGenerating visualisations...")
 
     # Get topic info for better labels
     topic_info = topic_model.get_topic_info()
@@ -408,8 +408,7 @@ def visualize_topics(topic_model, df, topics, model_name):
 
     log(f"Saved detailed topic terms to {topic_terms_path}")
 
-    # 4. 2D visualization of topic clusters using UMAP embeddings
-    log("\nGenerating 2D topic cluster visualization...")
+    log("\nGenerating 2D topic cluster visualisation...")
     try:
         # Get document embeddings - use transform to get existing embeddings
         documents = df["content"].tolist()
@@ -420,7 +419,7 @@ def visualize_topics(topic_model, df, topics, model_name):
         embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
         embeddings = embedding_model.encode(documents, show_progress_bar=True)
 
-        # Use UMAP to reduce to 2D for visualization
+        # Use UMAP to reduce to 2D for visualisation
         from umap import UMAP
 
         reducer = UMAP(
@@ -479,10 +478,10 @@ def visualize_topics(topic_model, df, topics, model_name):
         filepath = get_image_path(f"topic_clusters_2d_{model_name}.png")
         plt.savefig(filepath, dpi=150, bbox_inches="tight")
         plt.close()
-        log(f"Saved 2D cluster visualization to {filepath}")
+        log(f"Saved 2D cluster visualisation to {filepath}")
 
     except Exception as e:
-        log(f"Could not generate cluster visualization: {e}")
+        log(f"Could not generate cluster visualisation: {e}")
 
     # 5. Save topic-document mapping
     topic_docs = df[["id", "topic", "score", "title", "content"]].copy()
@@ -603,8 +602,8 @@ def main():
         return
 
     # Downstream Analysis (Decoupled from model creation)
-    topic_info, topic_stats = analyze_topics(topic_model, df, topics)
-    visualize_topics(topic_model, df, topics, model_name)
+    topic_info, topic_stats = analyse_topics(topic_model, df, topics)
+    visualise_topics(topic_model, df, topics, model_name)
 
     log_completion_report(model_name)
 

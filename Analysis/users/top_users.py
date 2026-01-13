@@ -315,7 +315,7 @@ def main():
     )
     log("\n")
 
-    log("\nGenerating visualizations...")
+    log("\nGenerating visualisations...")
     plot_leaderboard(df, top_n=20, metric="cumulative_score")
     plot_leaderboard(df, top_n=20, metric="total_posts")
     plot_quality_vs_quantity(df, top_n=100)

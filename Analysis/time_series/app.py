@@ -165,50 +165,55 @@ def users():
         limit = data.get("limit", 100)
         refresh = data.get("refresh", False)
 
-        # Query for top users
-        if item_type == "all":
-            type_filter = "type IN ('story', 'comment')"
-        elif item_type in ["story", "comment"]:
-            type_filter = f"type = '{item_type}'"
+        cache_filename = cache_dir / f"top_users_{item_type}_top{limit}.csv"
+
+        if not refresh and cache_filename.exists():
+            df = pd.read_csv(cache_filename)
         else:
-            return jsonify({"success": False, "error": "Invalid item type"}), 400
+            if item_type == "all":
+                type_filter = "type IN ('story', 'comment')"
+            elif item_type in ["story", "comment"]:
+                type_filter = f"type = '{item_type}'"
+            else:
+                return jsonify({"success": False, "error": "Invalid item type"}), 400
 
-        query = text(
-            f"""
-            SELECT 
-                by AS username,
-                COUNT(*) AS total_posts,
-                SUM(score) AS cumulative_score,
-                ROUND(AVG(score)::numeric, 2) AS avg_score,
-                MAX(score) AS top_post_score,
-                MIN(to_timestamp(time)) AS first_post_date,
-                MAX(to_timestamp(time)) AS last_post_date
-            FROM items
-            WHERE by IS NOT NULL
-                AND by != ''
-                AND {type_filter}
-                AND score IS NOT NULL
-            GROUP BY by
-            HAVING SUM(score) > 0
-            ORDER BY cumulative_score DESC
-            LIMIT :limit
-        """
-        )
+            query = text(
+                f"""
+                SELECT
+                    by AS username,
+                    COUNT(*) AS total_posts,
+                    SUM(score) AS cumulative_score,
+                    ROUND(AVG(score)::numeric, 2) AS avg_score,
+                    MAX(score) AS top_post_score,
+                    MIN(to_timestamp(time)) AS first_post_date,
+                    MAX(to_timestamp(time)) AS last_post_date
+                FROM items
+                WHERE by IS NOT NULL
+                    AND by != ''
+                    AND {type_filter}
+                    AND score IS NOT NULL
+                GROUP BY by
+                HAVING SUM(score) > 0
+                ORDER BY cumulative_score DESC
+                LIMIT :limit
+            """
+            )
 
-        with engine.connect() as conn:
-            df = pd.read_sql(query, conn, params={"limit": limit})
+            with engine.connect() as conn:
+                df = pd.read_sql(query, conn, params={"limit": limit})
 
-        # Generate visualizations
+            df.to_csv(cache_filename, index=False)
+
         images = []
+        leaderboard_count = min(20, len(df))
+        df_plot = df.head(leaderboard_count).copy()
 
-        # Leaderboard chart
-        df_plot = df.head(20).copy()
         plt.figure(figsize=(12, 8))
         colors = plt.cm.viridis(range(len(df_plot)))
         plt.barh(df_plot["username"], df_plot["cumulative_score"], color=colors)
         plt.xlabel("Cumulative Score")
         plt.ylabel("Username")
-        plt.title(f"Top 20 Users by Cumulative Score")
+        plt.title(f"Top {leaderboard_count} Users by Cumulative Score")
         plt.gca().invert_yaxis()
         plt.grid(axis="x", alpha=0.3)
         plt.tight_layout()
@@ -220,8 +225,8 @@ def users():
         plt.close()
         images.append(f"/static/images/{filename1}")
 
-        # Quality vs Quantity scatter plot
-        df_plot2 = df.head(min(100, limit)).copy()
+        scatter_count = min(limit, len(df))
+        df_plot2 = df.head(scatter_count).copy()
         plt.figure(figsize=(12, 8))
         scatter = plt.scatter(
             df_plot2["total_posts"],
@@ -234,7 +239,6 @@ def users():
             linewidth=0.5,
         )
 
-        # Label top 10 users
         for idx, row in df_plot2.head(10).iterrows():
             plt.annotate(
                 row["username"],
@@ -248,7 +252,7 @@ def users():
         plt.colorbar(scatter, label="Average Score")
         plt.xlabel("Total Posts")
         plt.ylabel("Cumulative Score")
-        plt.title(f"Quality vs Quantity: Top {min(100, limit)} Users")
+        plt.title(f"Quality vs Quantity: Top {scatter_count} Users")
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
 
@@ -263,7 +267,7 @@ def users():
         return jsonify({"success": True, "images": images, "users": users_list})
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500("users.html")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route("/analyse", methods=["POST"])

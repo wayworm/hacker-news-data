@@ -5,9 +5,9 @@ import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 from sqlalchemy import create_engine, text
-from pathlib import Path
 
 import helper.config as config
+from helper.paths import get_cache_path, get_image_path
 
 matplotlib.use("Agg")
 
@@ -68,17 +68,10 @@ KEYWORD_QUERIES = {
     "beam": "beam & (apache | dataflow | pipeline)",
 }
 
-BASE_DIR = Path(__file__).parent.resolve()
-
-cache_dir = BASE_DIR / "cache"
-cache_dir.mkdir(exist_ok=True)
-image_dir = BASE_DIR / "static" / "images"
-image_dir.mkdir(parents=True, exist_ok=True)
-
 
 def get_baseline(time_bin, refresh=False):
     """Load or create baseline data"""
-    baseline_cache = cache_dir / f"baseline_{time_bin}.csv"
+    baseline_cache = get_cache_path(f"baseline_{time_bin}.csv")
     time_bin_map = {"D": "day", "W": "week", "ME": "month"}
     sql_time_bin = time_bin_map[time_bin]
 
@@ -110,7 +103,7 @@ def get_baseline(time_bin, refresh=False):
 
 def query_keyword(keyword, tsquery, time_bin, refresh=False):
     """Query or load cached data for a keyword"""
-    cache_filename = cache_dir / f"{keyword}_{time_bin}_aggregated.csv"
+    cache_filename = get_cache_path(f"{keyword}_{time_bin}_aggregated.csv")
     time_bin_map = {"D": "day", "W": "week", "ME": "month"}
     sql_time_bin = time_bin_map[time_bin]
 
@@ -165,7 +158,7 @@ def users():
         limit = data.get("limit", 100)
         refresh = data.get("refresh", False)
 
-        cache_filename = cache_dir / f"top_users_{item_type}_top{limit}.csv"
+        cache_filename = get_cache_path(f"top_users_{item_type}_top{limit}.csv")
 
         if not refresh and cache_filename.exists():
             df = pd.read_csv(cache_filename)
@@ -220,7 +213,7 @@ def users():
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename1 = f"leaderboard_{timestamp}.png"
-        filepath1 = image_dir / filename1
+        filepath1 = get_image_path(filename1)
         plt.savefig(filepath1, dpi=150, bbox_inches="tight")
         plt.close()
         images.append(f"/static/images/{filename1}")
@@ -257,7 +250,7 @@ def users():
         plt.tight_layout()
 
         filename2 = f"quality_vs_quantity_{timestamp}.png"
-        filepath2 = image_dir / filename2
+        filepath2 = get_image_path(filename2)
         plt.savefig(filepath2, dpi=150, bbox_inches="tight")
         plt.close()
         images.append(f"/static/images/{filename2}")
@@ -330,7 +323,7 @@ def analyse():
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"plot_{timestamp}_{', '.join(keywords_raw)}.png"
-        filepath = image_dir / filename
+        filepath = get_image_path(filename)
         plt.savefig(filepath, dpi=150)
         plt.close()
 

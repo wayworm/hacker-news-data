@@ -1,12 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from sqlalchemy import create_engine, text
-from pathlib import Path
 from datetime import datetime
 import argparse
 import logging
 
 import helper.config as config
+from helper.paths import get_cache_path, get_image_path
 
 # Q3. **Which users have accumulated the most influence on the platform?**
 
@@ -41,18 +41,6 @@ engine = create_engine(
     connect_args={"options": "-c statement_timeout=0"},
 )
 
-# Add this debugging
-print(f"DB Config: {env_vars}")
-print(f"Host: {env_vars.get('host')}")
-print(f"Port: {env_vars.get('port')}")
-
-BASE_DIR = Path(__file__).parent.resolve()
-
-cache_dir = BASE_DIR / "cache"
-cache_dir.mkdir(exist_ok=True)
-image_dir = BASE_DIR / "images"
-image_dir.mkdir(parents=True, exist_ok=True)
-
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='users.log', level=logging.INFO)
 
@@ -72,7 +60,7 @@ def get_top_users(item_type="all", limit=100, refresh=False):
         limit: number of top users to return
         refresh: force refresh from database
     """
-    cache_filename = cache_dir / f"top_users_{item_type}_top{limit}.csv"
+    cache_filename = get_cache_path(f"top_users_{item_type}_top{limit}.csv")
 
     if not refresh and cache_filename.exists():
         log(f"Loading cached data from {cache_filename}")
@@ -184,7 +172,7 @@ def plot_leaderboard(df, top_n=20, metric="cumulative_score"):
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"leaderboard_{metric}_top{top_n}_{timestamp}.png"
-    filepath = image_dir / filename
+    filepath = get_image_path(filename)
     plt.savefig(filepath, dpi=150, bbox_inches="tight")
     plt.close()
     log(f"Saved leaderboard to {filepath}")

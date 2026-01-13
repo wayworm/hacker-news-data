@@ -33,6 +33,9 @@ services:
       - db
     networks:
       - hn-network
+    volumes:
+      - cache_data:/app/cache
+      - image_data:/app/static/images
 
   scraper:
     build:
@@ -52,3 +55,8 @@ services:
 networks:
   hn-network:
     driver: bridge
+
+
+volumes:
+  cache_data:
+  image_data:

@@ -1,0 +1,30 @@
+name: Docker CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build analysis image
+        run: |
+          docker build \
+            --file Project.Dockerfile \
+            --target analysis_image \
+            -t analysis:test \
+            .
+
+      - name: Build scraper image
+        run: |
+          docker build \
+            --file Project.Dockerfile \
+            --target scraper_image \
+            -t scraper:test \
+            .

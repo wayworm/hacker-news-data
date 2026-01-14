@@ -22,7 +22,7 @@ Suite of analytical tools for extracting insights from the data.
 
 
 # Live Demo
-[Try the temporal analysis tool here →](your-site.com/hn-analysis)
+[Try the analysis tools here →](hn.teddymcdermott.co.uk)
 
 Search for keywords like "rust", "react", or "ai" to see discussion 
 trends over time across 45M+ Hacker News items.
